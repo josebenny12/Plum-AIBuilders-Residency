@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plum — AI Builder's Residency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --fg: #efefef;
+    --accent: #c8c8c8;
+    --dim: #6a6a6a;
+    --bright: #efefef;
+    --border: #2a2a2a;
+    --mono: 'Space Mono', monospace;
+    --body: 'DM Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    font-size: 14px;
+    line-height: 1.7;
+    cursor: crosshair;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* GRID LINES */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(200,200,200,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,200,200,0.02) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(4px);
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bright);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .nav-right {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-family: var(--body);
+    font-size: 11px;
+    color: var(--dim);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+
+  .nav-link:hover { color: var(--accent); }
+
+  .nav-cta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 8px 18px;
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    transition: background 0.15s;
+  }
+  .nav-cta:hover { background: var(--bright); }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    padding-top: 80px;
+  }
+
+  .hero-left {
+    padding: 80px 40px 80px 40px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .hero-tag {
+    font-family: var(--body);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 60px;
+  }
+
+  .hero-headline {
+    font-family: var(--mono);
+    font-size: clamp(42px, 5.5vw, 80px);
+    font-weight: 700;
+    line-height: 1.0;
+    color: var(--bright);
+    letter-spacing: -0.02em;
+  }
+
+  .hero-headline .slash {
+    color: var(--dim);
+    font-weight: 400;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 60px;
+  }
+
+  .hero-meta-row {
+    display: flex;
+    gap: 24px;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .hero-meta-row span { color: var(--accent); }
+
+  .hero-right {
+    padding: 80px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-intro {
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.85;
+    color: var(--accent);
+    max-width: 520px;
+  }
+
+  .hero-intro p + p { margin-top: 24px; }
+
+  .hero-intro strong {
+    color: var(--bright);
+    font-weight: 500;
+  }
+
+  .stipend-block {
+    margin-top: 60px;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+
+  .stipend-label {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .stipend-number {
+    font-family: var(--mono);
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 700;
+    color: var(--bright);
+    letter-spacing: -0.02em;
+  }
+
+  /* MARQUEE */
+  .marquee-wrap {
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 14px 0;
+    background: var(--border);
+  }
+
+  .marquee-track {
+    display: flex;
+    white-space: nowrap;
+    animation: marquee 30s linear infinite;
+  }
+
+  .marquee-item {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+    padding: 0 40px;
+  }
+
+  .marquee-item .dot {
+    color: var(--accent);
+    margin-right: 40px;
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* SECTIONS */
+  section {
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-inner {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+  }
+
+  .section-label {
+    padding: 60px 40px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    writing-mode: horizontal-tb;
+  }
+
+  .section-body {
+    padding: 60px 40px 60px 60px;
+  }
+
+  /* WHAT THIS IS */
+  .what-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .what-item {
+    padding: 40px;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-left: none;
+  }
+
+  .what-item:nth-child(odd) { border-left: none; }
+  .what-item:nth-child(even) { border-right: none; }
+
+  .what-item-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    margin-bottom: 16px;
+  }
+
+  .what-item-text {
+    font-size: 15px;
+    color: var(--accent);
+    line-height: 1.75;
+  }
+
+  .what-item-text strong {
+    color: var(--bright);
+    font-weight: 500;
+    display: block;
+    font-family: var(--mono);
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  /* WHO THIS IS FOR */
+  .who-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+  }
+
+  .who-block {}
+
+  .who-block-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .who-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .who-list li {
+    font-size: 14px;
+    color: var(--accent);
+    line-height: 1.65;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .who-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--dim);
+    font-family: var(--mono);
+  }
+
+  .callout {
+    margin-top: 40px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    background: rgba(200,200,200,0.02);
+  }
+
+  .callout-text {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--bright);
+    line-height: 1.65;
+    font-weight: 400;
+  }
+
+
+
+  /* TEAM */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    margin-top: -1px;
+  }
+
+  .team-card {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 32px;
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  .team-card:hover {
+    background: rgba(200,200,200,0.03);
+  }
+
+  .team-initials {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--dim);
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    transition: color 0.2s;
+  }
+
+  .team-card:hover .team-initials {
+    color: var(--accent);
+  }
+
+  .team-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bright);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+
+  .team-role {
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .team-prev {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+
+  .who-callout {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-family: var(--body);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--dim);
+    line-height: 1.75;
+  }
+
+  .who-callout span {
+    color: #444;
+  }
+
+  .team-intro {
+    margin-bottom: 40px;
+    font-size: 15px;
+    color: var(--dim);
+    line-height: 1.75;
+    max-width: 600px;
+  }
+
+  .team-intro strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  /* SELECTION */
+  .selection-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .selection-left {
+    padding-right: 60px;
+    border-right: 1px solid var(--border);
+  }
+
+  .selection-right {
+    padding-left: 60px;
+  }
+
+  .selection-heading {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1.2;
+    margin-bottom: 32px;
+    letter-spacing: -0.02em;
+  }
+
+  .selection-body {
+    font-size: 15px;
+    color: var(--accent);
+    line-height: 1.85;
+  }
+
+  .selection-body p + p { margin-top: 20px; }
+
+  .process-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .process-step {
+    display: flex;
+    gap: 24px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .process-step:first-child { border-top: 1px solid var(--border); }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    min-width: 32px;
+    padding-top: 2px;
+  }
+
+  .step-content {}
+
+  .step-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.65;
+  }
+
+  /* PATHS */
+  .paths-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  .path-card {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 32px;
+    transition: background 0.2s;
+  }
+
+  .path-card:hover {
+    background: rgba(200,200,200,0.025);
+  }
+
+  .path-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .path-name {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--bright);
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+    line-height: 1.25;
+  }
+
+  .path-desc {
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.75;
+  }
+
+  .path-desc strong {
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .after-heading {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--bright);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    max-width: 500px;
+  }
+
+  .after-sub {
+    font-size: 15px;
+    color: var(--dim);
+    line-height: 1.75;
+    max-width: 500px;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .footer-right {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .footer-link {
+    font-size: 11px;
+    color: var(--dim);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+
+  .footer-link:hover { color: var(--accent); }
+
+  .footer-copy {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* CTA SECTION */
+  .cta-section {
+    padding: 100px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 80px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-headline {
+    font-family: var(--mono);
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .cta-sub {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--dim);
+    line-height: 1.75;
+    max-width: 400px;
+  }
+
+  .cta-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .cta-btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bg);
+    background: var(--bright);
+    padding: 16px 40px;
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-block;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .cta-btn:hover {
+    background: var(--accent);
+    transform: translate(-2px, -2px);
+  }
+
+  .cta-note {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* BIG RULE LINE */
+  .rule {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* SCROLL ANIMATIONS */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .reveal-stagger.visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0s; }
+  .reveal-stagger.visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.08s; }
+  .reveal-stagger.visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.16s; }
+  .reveal-stagger.visible > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.24s; }
+  .reveal-stagger.visible > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.32s; }
+  .reveal-stagger.visible > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.40s; }
+
+  /* BLINKING CURSOR */
+  .cursor {
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background: var(--accent);
+    margin-left: 4px;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* HORIZONTAL RULE in sections */
+  .h-rule {
+    height: 1px;
+    background: var(--border);
+    margin: 40px 0;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-left { border-right: none; border-bottom: 1px solid var(--border); }
+    .section-inner { grid-template-columns: 1fr; }
+    .section-label { border-right: none; border-bottom: 1px solid var(--border); padding: 32px 24px; writing-mode: horizontal-tb; flex-direction: row; }
+    .section-body { padding: 40px 24px; }
+    .what-grid { grid-template-columns: 1fr; }
+    .who-cols { grid-template-columns: 1fr; gap: 40px; }
+    .team-grid { grid-template-columns: 1fr 1fr; }
+    .selection-layout { grid-template-columns: 1fr; }
+    .selection-left { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 40px; margin-bottom: 40px; }
+    .selection-right { padding-left: 0; }
+    .paths-grid { grid-template-columns: 1fr; }
+    .cta-section { grid-template-columns: 1fr; gap: 40px; }
+    nav { padding: 16px 24px; }
+    .nav-right { gap: 20px; }
+    footer { flex-direction: column; gap: 20px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Plum</a>
+  <div class="nav-right">
+    <a href="#what" class="nav-link">What</a>
+    <a href="#who" class="nav-link">Who</a>
+    <a href="#team" class="nav-link">Team</a>
+    <a href="#process" class="nav-link">Process</a>
+    <a href="#apply" class="nav-cta">Apply →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div>
+      <div class="hero-tag">AI Builder's Residency · Bengaluru · Cohort 1 · Limited Seats</div>
+      <h1 class="hero-headline">
+        BUILD<br>
+        <span class="slash">/</span>SHIP<br>
+        <span class="slash">/</span>OWN<span class="cursor"></span>
+      </h1>
+    </div>
+    <div class="hero-meta">
+      <div class="hero-meta-row">Duration: <span>12 Months</span></div>
+      <div class="hero-meta-row">Location: <span>In-Person</span></div>
+      <div class="hero-meta-row">Cohort Size: <span>5 Builders</span></div>
+      <div class="hero-meta-row">Problem Statements: <span>5 per year</span></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-intro reveal">
+      <p>The builder of this era is different.</p>
+      <p>They love building deeply enough to do it themselves, and have the <strong>business acumen</strong> to ensure what gets built creates real impact. Not just elegant systems. Not just clever ideas. <strong>Things that move metrics and matter in the real world.</strong></p>
+      <p>As the gap between thinking and building collapses, the most valuable people are those who can do both.</p>
+      <p>The Builder's Residency exists to find and back them.</p>
+    </div>
+    <div class="stipend-block reveal">
+      <div class="stipend-label">Annual Compensation</div>
+      <div class="stipend-number">₹40 LPA</div>
+    </div>
+  </div>
+</div>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item"><span class="dot">◆</span>A good idea that never becomes a thing is indistinguishable from no idea at all.</span>
+    <span class="marquee-item"><span class="dot">◆</span>A good idea that never becomes a thing is indistinguishable from no idea at all.</span>
+    <span class="marquee-item"><span class="dot">◆</span>A good idea that never becomes a thing is indistinguishable from no idea at all.</span>
+    <span class="marquee-item"><span class="dot">◆</span>A good idea that never becomes a thing is indistinguishable from no idea at all.</span>
+  </div>
+</div>
+
+<!-- WHAT THIS IS -->
+<section id="what">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="section-num">01</span>
+      <span class="section-title">What This Is</span>
+    </div>
+    <div class="section-body">
+      <div class="what-grid reveal-stagger">
+        <div class="what-item">
+          <div class="what-item-num">→ 01</div>
+          <div class="what-item-text">
+            <strong>A 12-month residency</strong>
+            For exceptional builders. Not a training program. Not a shadow role.
+          </div>
+        </div>
+        <div class="what-item">
+          <div class="what-item-num">→ 02</div>
+          <div class="what-item-text">
+            <strong>Direct access</strong>
+            Work with Plum's CEO, CTO, and COO on high-stakes problems. No middlemen.
+          </div>
+        </div>
+        <div class="what-item">
+          <div class="what-item-num">→ 03</div>
+          <div class="what-item-text">
+            <strong>Five problem statements</strong>
+            Own five real problem statements across the year. End to end.
+          </div>
+        </div>
+        <div class="what-item">
+          <div class="what-item-num">→ 04</div>
+          <div class="what-item-text">
+            <strong>Full accountability</strong>
+            From problem → solution → product → measurable impact. You own every step.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO THIS IS FOR -->
+<section id="who">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="section-num">02</span>
+      <span class="section-title">Who This Is For</span>
+    </div>
+    <div class="section-body">
+      <div class="who-cols">
+        <div class="who-block reveal">
+          <div class="who-block-title">Typical Background</div>
+          <ul class="who-list">
+            <li>Computer science graduate from a Tier-1 engineering college.</li>
+            <li>Have shipped real products to production.</li>
+            <li>Strong business acumen and problem-solving instincts.</li>
+            <li>Many residents are ex-founders or product builders.</li>
+            <li>People who understand how companies are actually built.</li>
+            <li>You can read a codebase and a P&L.</li>
+          </ul>
+        </div>
+        <div class="who-block reveal">
+          <div class="who-block-title">The Standard</div>
+          <ul class="who-list">
+            <li>You have something concrete to show. Not a title. Actual outcomes with numbers.</li>
+            <li>Deep technical ability with sharp business thinking.</li>
+            <li>You know how to build — and understand why it matters.</li>
+            <li>You move fast without breaking things that matter. You know the difference.</li>
+            <li>You have strong opinions on product, and can defend them with data.</li>
+            <li>You are comfortable with ambiguity. You don't need a spec to start.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="who-callout reveal">
+        A feature that doesn't move a metric is a liability.<br>
+        A beautiful system no one uses is an indulgence.<br>
+        If that feels obvious to you, you belong here.<br>
+        <br>
+        <span>Most people who apply will not make it. For those who do, it is worth it.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="section-num">03</span>
+      <span class="section-title">Who You'll Work With</span>
+    </div>
+    <div class="section-body">
+      <div class="team-intro reveal">
+        You won't be working <em>for</em> these people. You'll be working <strong>with</strong> them.<br>
+        Everyone here has built something. They know what it feels like to own an outcome with no one above to escalate to.
+      </div>
+      <div class="team-grid reveal-stagger">
+        <div class="team-card">
+          <div class="team-initials">AP</div>
+          <div class="team-name">Abhishek Poddar</div>
+          <div class="team-role">CEO & Co-founder</div>
+          <div class="team-prev">Ex-Google, McKinsey</div>
+        </div>
+        <div class="team-card">
+          <div class="team-initials">SA</div>
+          <div class="team-name">Saurabh Arora</div>
+          <div class="team-role">CTO & Co-founder</div>
+          <div class="team-prev">Ex-Freshworks</div>
+        </div>
+        <div class="team-card">
+          <div class="team-initials">SA</div>
+          <div class="team-name">Shreyas Achar</div>
+          <div class="team-role">Marketing & Brand</div>
+          <div class="team-prev">Ex-Clevertap, Razorpay</div>
+        </div>
+        <div class="team-card">
+          <div class="team-initials">AG</div>
+          <div class="team-name">Akshay Golechha</div>
+          <div class="team-role">New Businesses</div>
+          <div class="team-prev">Ex-Temasek</div>
+        </div>
+        <div class="team-card">
+          <div class="team-initials">AB</div>
+          <div class="team-name">Avik Bhandari</div>
+          <div class="team-role">Account Management</div>
+          <div class="team-prev">Ex-Meesho, Amazon</div>
+        </div>
+        <div class="team-card">
+          <div class="team-initials">AK</div>
+          <div class="team-name">Ashish Khandelwal</div>
+          <div class="team-role">Product</div>
+          <div class="team-prev">Ex-Flipkart, Unacademy</div>
+        </div>
+      </div>
+      <div style="margin-top: 32px; font-size: 13px; color: var(--dim); font-style: italic;">
+        They did not become builders by accident. They chose it.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SELECTION -->
+<section id="process">
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="section-num">04</span>
+      <span class="section-title">Selection</span>
+    </div>
+    <div class="section-body">
+      <div class="selection-layout">
+        <div class="selection-left reveal">
+          <div class="selection-heading">No resume<br>screening.</div>
+          <div class="selection-body">
+            <p>We evaluate what you have actually done.</p>
+            <p>Show us what you built.<br>Show us what moved because of it.</p>
+          </div>
+        </div>
+        <div class="selection-right reveal">
+          <div class="process-steps">
+            <div class="process-step">
+              <span class="step-num">01 —</span>
+              <div class="step-content">
+                <div class="step-title">Show Your Work</div>
+                <div class="step-desc">Submit what you've built. Links, metrics, evidence. Not a resume. Not a portfolio. Proof.</div>
+              </div>
+            </div>
+            <div class="process-step">
+              <span class="step-num">02 —</span>
+              <div class="step-content">
+                <div class="step-title">Problem Statement</div>
+                <div class="step-desc">We send you a real problem. You solve it. We evaluate how you think and what you ship.</div>
+              </div>
+            </div>
+            <div class="process-step">
+              <span class="step-num">03 —</span>
+              <div class="step-content">
+                <div class="step-title">Conversation</div>
+                <div class="step-desc">Not an interview. A conversation about what you've built and how you think about building.</div>
+              </div>
+            </div>
+            <div class="process-step">
+              <span class="step-num">04 —</span>
+              <div class="step-content">
+                <div class="step-title">Decision</div>
+                <div class="step-desc">Fast. Binary. We'll tell you exactly where you stand.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AFTER 12 MONTHS -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">
+      <span class="section-num">05</span>
+      <span class="section-title">After 12 Months</span>
+    </div>
+    <div class="section-body">
+      <div class="reveal">
+        <div class="after-heading">If you perform, you won't leave looking for a job.</div>
+        <div class="after-sub">You will step into real ownership.</div>
+      </div>
+      <div class="paths-grid reveal-stagger">
+        <div class="path-card">
+          <div class="path-num">Path 01</div>
+          <div class="path-name">Founder's<br>Office</div>
+          <div class="path-desc">Work directly with the CEO on the highest-leverage problems. <strong>For those who demonstrate the judgment, this may include leading the next cohort.</strong></div>
+        </div>
+        <div class="path-card">
+          <div class="path-num">Path 02</div>
+          <div class="path-name">General<br>Manager</div>
+          <div class="path-desc">Step into a GM, product lead, or function lead role based on the quality of your delivery. <strong>Own a product. Own a function. Build something new.</strong></div>
+        </div>
+        <div class="path-card">
+          <div class="path-num">Path 03</div>
+          <div class="path-name">Exit &amp;<br>Maybe We Back You</div>
+          <div class="path-desc">Starting something of your own? <strong>We will make the right introductions.</strong> The residency is designed to produce builders who go on to build things.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section" id="apply">
+  <div>
+    <div class="cta-headline reveal">The residency exists to find and back exceptional builders.</div>
+    <div class="cta-sub reveal">Applications are evaluated on merit. Show us what you've built. Show us what moved because of it.</div>
+  </div>
+  <div class="cta-right reveal">
+    <a href="#" class="cta-btn">Apply to the Residency →</a>
+    <div class="cta-note">AI Builder's Residency · Bengaluru · Cohort 1 · Limited Seats</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Plum</div>
+  <div class="footer-right">
+    <a href="https://www.plumhq.com/" target="_blank" class="footer-link">plumhq.com</a>
+    <a href="https://www.plumhq.com/about" target="_blank" class="footer-link">About Us</a>
+    <a href="https://www.plumhq.com/careers" target="_blank" class="footer-link">Careers</a>
+  </div>
+  <div class="footer-copy">AI Builder's Residency · Bengaluru · Cohort 1 · Limited Seats</div>
+</footer>
+
+<script>
+  // Intersection observer for reveal animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
+    observer.observe(el);
+  });
+
+  // Subtle cursor trail
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:9998;opacity:0.35';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let points = [];
+  let mouse = { x: -100, y: -100 };
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    points.push({ x: e.clientX, y: e.clientY, age: 0 });
+    if (points.length > 40) points.shift();
+  });
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    points.forEach((p, i) => {
+      p.age++;
+      if (i > 0) {
+        const prev = points[i - 1];
+        const alpha = Math.max(0, 1 - p.age / 30) * 0.4;
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(200,200,200,${alpha})`;
+        ctx.lineWidth = 1;
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+    });
+    points = points.filter(p => p.age < 30);
+    requestAnimationFrame(draw);
+  }
+  draw();
+</script>
+</body>
+</html>
